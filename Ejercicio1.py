@@ -1,0 +1,134 @@
+# Para un lenguaje que reconoce de matrices numéricas en el que, por ejemplo, la matriz de tres filas
+# y tres columnas.
+# [ 1, -3,  0 ]
+# [-1,  0, -2 ]
+# [ 4,  2,  0 ]
+# Escriba un esquema de traducción que controle que todas las filas de la matriz tengan la misma cantidad 
+# de elementos, de ser así mostrar un mensaje indicado que la definición es la correcta, de lo contrario 
+# que indique la cantidad de filas con error
+
+# GRAMATICA
+# S ->  E
+# E -> ( T )
+# T -> T ; F
+#   |  F
+# F -> F , num
+#   |  num
+
+# definir reservadas
+reservadas = {
+    'int': 'INT',
+    'char': 'CHAR',
+}
+
+# definir tokens
+tokens = [
+    'PARA',
+    'PARC',
+    'COMA',
+    'PUNTOCOMA',
+    'ENTERO',
+    'ID'
+] + list(reservadas.values())
+
+# tokens
+t_PARA          = r'\('
+t_PARC          = r'\)'
+t_COMA          = r'\,'
+t_PUNTOCOMA     = r'\;'
+
+
+def t_ENTERO(t):
+    r'\-?\d+'
+    try:
+        t.value = int(t.value)
+    except ValueError:
+        print("Integer value too large %d", t.value)
+        t.value = 0
+    return t
+
+def t_ID(t):
+     r'[a-zA-Z][a-zA-Z_0-9]*'
+     t.type = reservadas.get(t.value.lower(),'ID')
+     return t
+
+# Caracteres ignorados
+t_ignore = " \t"
+
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += t.value.count("\n")
+    
+def t_error(t):
+    print("Illegal character '%s'" % t.value[0])
+    t.lexer.skip(1)
+
+# Compute column.
+#     input is the input text string
+#     token is a token instance
+def find_column(inp, token):
+    line_start = inp.rfind('\n', 0, token.lexpos) + 1
+    return (token.lexpos - line_start) + 1
+
+# construyendo el analizador léxico
+import Interprete.ply.lex as lex
+lexer = lex.lex()
+
+class Nodo():
+    def __init__(self):
+        self.cont = 0
+        self.error= False
+
+def p_init(t):
+    'S  :   E'
+    t[0] = t[1]
+
+def p_E(t):
+    'E      :   PARA T PARC '
+    t[0] = Nodo()
+    if(t[2].error == True):
+        print("Filas Incorrectas")
+    else:
+        print("Filas Correctas")
+
+def p_T(t):
+    'T      :   T PUNTOCOMA F'
+    t[0] = Nodo()
+    if(t[1].error == True):
+        t[0].error = True
+        t[0].cont = -1
+    else:
+        if(t[1].cont != t[3].cont):
+            t[0].error = True
+            t[0].cont = -1
+        else:
+            t[0].error = False
+            t[0].cont = t[1].cont
+
+def p_T1(t):
+    'T      :   F'
+    t[0] = Nodo()
+    t[0].error = False
+    t[0].cont = t[1].cont 
+
+def p_F(t):
+    'F  :   F COMA ENTERO'
+    t[0] = Nodo()
+    t[0].cont = t[1].cont + 1
+
+def p_F1(t):
+    '''F    :   ENTERO '''
+    t[0] = Nodo()
+    t[0].cont = 1
+
+def p_error(t):
+    print(t)
+    print("Error sintáctico en '%s'" % t.value)
+
+import Interprete.ply.yacc as yacc
+parser = yacc.yacc()
+
+def parse(input) :
+    return parser.parse(input)
+
+parse("( 1, -3, 0 ; -1, 0, -2; 4, 2, 0 )")

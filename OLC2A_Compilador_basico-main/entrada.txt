@@ -1,0 +1,42 @@
+#=
+if a + 2 > b then {
+    a = 20;
+} else {
+    b = a;
+}
+=#
+
+#=
+while i < a * 10 do {
+    i = i + 1;
+}
+=#
+
+#=
+do {
+    a = n - 1;
+} while (a + k < n / 2);
+=#
+
+#=
+for bomba = x - 20 to x * 10 do {
+    pts = 50;
+}
+=#
+
+
+for num = 0 to n * 10 do {
+    if num % 2 == 0 then {
+        i = 0;
+        while i < n - 3 do {
+            nota = 100;
+            i = i + 1;
+        }
+    } else {
+        i = 0;
+        do {
+            nota = 100 - 100 * 5 / 100 * n;
+            i = i + 1;
+        } while (i < n - 3);
+    }
+}

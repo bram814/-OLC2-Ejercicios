@@ -1,0 +1,17 @@
+while a < b do {
+    a = 20;
+    continue;
+    loop {
+        b = 20;
+        break;
+        continue;
+        c = 30;
+        break;
+    }
+}
+
+loop {
+    x = x + 1;
+    break;
+    a = 10;
+}
